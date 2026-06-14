@@ -1,0 +1,8 @@
+{
+  "name": "Remix: KKG PJOK Luwuk Timur",
+  "description": "Website Resmi Kelompok Kerja Guru (KKG) Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK) Kecamatan Luwuk Timur, Kabupaten Banggai, Sulawesi Tengah.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
