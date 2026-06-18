@@ -32,6 +32,7 @@ export default function Header({
     { id: 'galeri', label: 'Galeri' },
     { id: 'berita', label: 'Berita & Pengumuman' },
     { id: 'download', label: 'Unduhan' },
+    { id: 'drive', label: 'Google Drive' },
     { id: 'forum', label: 'Forum Diskusi' },
     { id: 'keuangan', label: 'Keuangan KKG' },
     { id: 'kontak', label: 'Kontak' },

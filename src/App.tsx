@@ -37,6 +37,7 @@ import DownloadView from './components/DownloadView';
 import ForumView from './components/ForumView';
 import KeuanganView from './components/KeuanganView';
 import KontakView from './components/KontakView';
+import GoogleDriveView from './components/GoogleDriveView';
 import AdminDashboard from './components/AdminDashboard';
 
 export default function App() {
@@ -448,6 +449,8 @@ export default function App() {
             currentUser={currentUser}
           />
         );
+      case 'drive':
+        return <GoogleDriveView />;
       case 'forum':
         return (
           <ForumView
