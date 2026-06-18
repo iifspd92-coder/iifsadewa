@@ -38,6 +38,7 @@ import ForumView from './components/ForumView';
 import KeuanganView from './components/KeuanganView';
 import KontakView from './components/KontakView';
 import GoogleDriveView from './components/GoogleDriveView';
+import GoogleSheetsView from './components/GoogleSheetsView';
 import AdminDashboard from './components/AdminDashboard';
 
 export default function App() {
@@ -451,6 +452,8 @@ export default function App() {
         );
       case 'drive':
         return <GoogleDriveView />;
+      case 'sheets':
+        return <GoogleSheetsView />;
       case 'forum':
         return (
           <ForumView

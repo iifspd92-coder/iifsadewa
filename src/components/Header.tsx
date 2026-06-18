@@ -33,6 +33,7 @@ export default function Header({
     { id: 'berita', label: 'Berita & Pengumuman' },
     { id: 'download', label: 'Unduhan' },
     { id: 'drive', label: 'Google Drive' },
+    { id: 'sheets', label: 'Google Sheets' },
     { id: 'forum', label: 'Forum Diskusi' },
     { id: 'keuangan', label: 'Keuangan KKG' },
     { id: 'kontak', label: 'Kontak' },

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import ConfirmationModal from './ConfirmationModal';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
 } from 'recharts';
@@ -47,6 +48,11 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState<'stats' | 'guru' | 'agenda' | 'arsip'>('stats');
   const [showAddGuruForm, setShowAddGuruForm] = useState(false);
   const [editingGuru, setEditingGuru] = useState<Guru | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'guru' | 'kegiatan' | 'berita' | 'dokumen';
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Form states for adding/editing Guru
   const [formNama, setFormNama] = useState('');
@@ -189,9 +195,26 @@ export default function AdminDashboard({
   };
 
   const handleDeleteGuruTrigger = (id: string, name: string) => {
-    if (window.confirm(`Apakah Anda benar-benar ingin menghapus data "${name}" dari database Guru KKG? Tindakan ini tidak dapat dibatalkan.`)) {
+    setDeleteTarget({ type: 'guru', id, name });
+  };
+
+  const executeConfirmedDelete = () => {
+    if (!deleteTarget) return;
+    const { type, id, name } = deleteTarget;
+    setDeleteTarget(null);
+
+    if (type === 'guru') {
       onDeleteGuru(id);
       showNotification(`🗑️ Data guru "${name}" berhasil dihapus.`);
+    } else if (type === 'kegiatan') {
+      onDeleteKegiatan(id);
+      showNotification(`🗑️ Agenda "${name}" berhasil dibatalkan.`);
+    } else if (type === 'berita') {
+      onDeleteBerita(id);
+      showNotification('🗑️ Berita sukses diarsipkan/dihapus.');
+    } else if (type === 'dokumen') {
+      onDeleteDokumen(id);
+      showNotification('🗑️ Berkas berhasil dihilangkan.');
     }
   };
 
@@ -836,12 +859,7 @@ export default function AdminDashboard({
                 </div>
 
                 <button
-                  onClick={() => {
-                    if (window.confirm(`Hapus agenda "${agenda.judul}"?`)) {
-                      onDeleteKegiatan(agenda.id);
-                      showNotification(`🗑️ Agenda "${agenda.judul}" berhasil dibatalkan.`);
-                    }
-                  }}
+                  onClick={() => setDeleteTarget({ type: 'kegiatan', id: agenda.id, name: agenda.judul })}
                   className="p-2 text-rose-450 hover:bg-rose-500/10 rounded-xl border border-transparent hover:border-rose-500/25 cursor-pointer"
                   title="Batalkan Kegiatan"
                 >
@@ -964,12 +982,7 @@ export default function AdminDashboard({
                     <p className="text-slate-400 font-mono text-[9px] mt-1">📆 {ar.tanggal} | ✒️ {ar.penulis}</p>
                   </div>
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Hapus rilis berita "${ar.judul}"?`)) {
-                        onDeleteBerita(ar.id);
-                        showNotification('🗑️ Berita sukses diarsipkan/dihapus.');
-                      }
-                    }}
+                    onClick={() => setDeleteTarget({ type: 'berita', id: ar.id, name: ar.judul })}
                     className="p-1.5 text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg shrink-0 cursor-pointer"
                     title="Hapus Berita"
                   >
@@ -1077,12 +1090,7 @@ export default function AdminDashboard({
                     <p className="text-slate-400 font-mono text-[9.5px] mt-1">🏷️ {dc.kategori} | 📦 UKURAN: {dc.ukuran}</p>
                   </div>
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Hapus berkas "${dc.judul}"?`)) {
-                        onDeleteDokumen(dc.id);
-                        showNotification('🗑️ Berkas berhasil dihilangkan.');
-                      }
-                    }}
+                    onClick={() => setDeleteTarget({ type: 'dokumen', id: dc.id, name: dc.judul })}
                     className="p-1.5 text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg shrink-0 cursor-pointer"
                     title="Hapus Dokumen"
                   >
@@ -1095,6 +1103,28 @@ export default function AdminDashboard({
 
         </div>
       )}
+
+      {/* Reusable confirmation modal */}
+      <ConfirmationModal
+        isOpen={!!deleteTarget}
+        title={
+          deleteTarget?.type === 'guru' ? 'Hapus Guru KKG' :
+          deleteTarget?.type === 'kegiatan' ? 'Batalkan Kegiatan' :
+          deleteTarget?.type === 'berita' ? 'Hapus Rilis Berita' :
+          'Hapus Dokumen Belajar'
+        }
+        message={
+          deleteTarget?.type === 'guru' 
+            ? `Apakah Anda benar-benar ingin menghapus data "${deleteTarget?.name}" dari database Guru KKG? Tindakan ini tidak dapat dibatalkan.`
+            : deleteTarget?.type === 'kegiatan'
+            ? `Apakah Anda yakin ingin membatalkan/menghapus agenda kegiatan "${deleteTarget?.name}"?`
+            : deleteTarget?.type === 'berita'
+            ? `Apakah Anda yakin ingin menghapus rilis berita "${deleteTarget?.name}"?`
+            : `Apakah Anda yakin ingin menghapus berkas dokumen "${deleteTarget?.name}" dari download center?`
+        }
+        onConfirm={executeConfirmedDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
     </div>
   );

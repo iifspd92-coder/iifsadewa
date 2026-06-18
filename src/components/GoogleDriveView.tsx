@@ -13,6 +13,7 @@ import {
 import { User } from 'firebase/auth';
 import { initAuth, googleSignIn, logout, getAccessToken } from '../lib/firebaseAuth';
 import { listFiles, createFolder, deleteDriveFile, uploadDriveFile, DriveFile } from '../lib/googleDriveApi';
+import ConfirmationModal from './ConfirmationModal';
 
 export default function GoogleDriveView() {
   const [user, setUser] = useState<User | null>(null);
@@ -42,6 +43,7 @@ export default function GoogleDriveView() {
 
   // Notifications
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [confirmDeleteFile, setConfirmDeleteFile] = useState<DriveFile | null>(null);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     setNotification({ type, message });
@@ -176,18 +178,16 @@ export default function GoogleDriveView() {
     }
   };
 
-  // Delete file (with mandatory user confirmation prompt)
-  const handleDelete = async (file: DriveFile) => {
+  // Delete file (with custom non-blocking confirmation dialog)
+  const handleDelete = (file: DriveFile) => {
     if (!token) return;
-    
-    const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
-    const typeLabel = isFolder ? 'folder beserta seluruh isinya' : 'berkas';
+    setConfirmDeleteFile(file);
+  };
 
-    const confirmed = window.confirm(
-      `Apakah Anda yakin ingin menghapus ${typeLabel} "${file.name}" dari Google Drive Anda?\nTindakan ini tidak bisa dibatalkan.`
-    );
-    
-    if (!confirmed) return;
+  const confirmDeleteAction = async () => {
+    if (!token || !confirmDeleteFile) return;
+    const file = confirmDeleteFile;
+    setConfirmDeleteFile(null);
 
     setLoading(true);
     try {
@@ -618,6 +618,14 @@ export default function GoogleDriveView() {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={!!confirmDeleteFile}
+        title={confirmDeleteFile?.mimeType === 'application/vnd.google-apps.folder' ? "Hapus Folder" : "Hapus Berkas"}
+        message={`Apakah Anda yakin ingin menghapus ${confirmDeleteFile?.mimeType === 'application/vnd.google-apps.folder' ? 'folder beserta seluruh isinya' : 'berkas'} "${confirmDeleteFile?.name}" dari Google Drive? Anda tidak dapat membatalkan tindakan ini.`}
+        onConfirm={confirmDeleteAction}
+        onCancel={() => setConfirmDeleteFile(null)}
+      />
 
     </div>
   );

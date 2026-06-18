@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import ConfirmationModal from './ConfirmationModal';
 import { 
   TrendingUp, TrendingDown, DollarSign, Plus, Trash2, 
   Calendar as CalendarIcon, FileText, CheckCircle, AlertCircle, 
@@ -39,6 +40,7 @@ export default function KeuanganView({
   const [tipe, setTipe] = useState<'Pemasukan' | 'Pengeluaran'>('Pemasukan');
   const [jumlah, setJumlah] = useState<number>(0);
   const [kategori, setKategori] = useState<TransaksiKeuangan['kategori']>('Iuran Kas');
+  const [confirmDeleteTx, setConfirmDeleteTx] = useState<TransaksiKeuangan | null>(null);
 
   const showNotification = (msg: string) => {
     setActionMessage(msg);
@@ -643,12 +645,7 @@ export default function KeuanganView({
                     {onDeleteTransaksi && isAuthorizedToInput && (
                       <td className="py-4 px-4 text-center">
                         <button
-                          onClick={() => {
-                            if (window.confirm(`Semua entri keuangan bersifat final. Anda yakin ingin menghapus logs "${tx.keterangan}"?`)) {
-                              onDeleteTransaksi(tx.id);
-                              showNotification(`🗑️ Riwayat transaki "${tx.keterangan}" berhasil di hapus.`);
-                            }
-                          }}
+                          onClick={() => setConfirmDeleteTx(tx)}
                           className="text-rose-400 hover:text-rose-500 p-1 rounded hover:bg-rose-500/10 cursor-pointer"
                           title="Hapus Transaksi"
                         >
@@ -677,6 +674,20 @@ export default function KeuanganView({
         </div>
 
       </div>
+
+      <ConfirmationModal
+        isOpen={!!confirmDeleteTx}
+        title="Hapus Transaksi Keuangan"
+        message={confirmDeleteTx ? `Semua entri keuangan bersifat final.\nApakah Anda yakin ingin menghapus logs riwayat transaksi "${confirmDeleteTx.keterangan}" sebesar Rp ${confirmDeleteTx.jumlah.toLocaleString('id-ID')}?` : ''}
+        onConfirm={() => {
+          if (confirmDeleteTx && onDeleteTransaksi) {
+            onDeleteTransaksi(confirmDeleteTx.id);
+            showNotification(`🗑️ Riwayat transaksi "${confirmDeleteTx.keterangan}" berhasil di hapus.`);
+          }
+          setConfirmDeleteTx(null);
+        }}
+        onCancel={() => setConfirmDeleteTx(null)}
+      />
 
     </div>
   );
