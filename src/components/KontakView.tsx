@@ -89,8 +89,8 @@ export default function KontakView() {
                 </div>
                 <div>
                   <p className="font-bold text-white">Hubungi WhatsApp Admin (Iif Sadewa)</p>
-                  <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-350 font-extrabold font-mono block mt-0.5 hover:underline">
-                    +62 812-3456-7890
+                  <a href="https://wa.me/6282213546580" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-350 font-extrabold font-mono block mt-0.5 hover:underline">
+                    0822-1354-6580
                   </a>
                   <p className="text-[10px] text-slate-400 mt-0.5">Kirim pesan cepat (Fast response)</p>
                 </div>

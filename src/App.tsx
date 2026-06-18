@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 // Main types
-import { Guru, Kegiatan, Galeri, Berita, Dokumen, ForumMessage, User, Komentar } from './types';
+import { Guru, Kegiatan, Galeri, Berita, Dokumen, ForumMessage, User, Komentar, TransaksiKeuangan } from './types';
 
 // Seed initial data
 import { 
@@ -21,7 +21,8 @@ import {
   INITIAL_GALERI, 
   INITIAL_BERITA, 
   INITIAL_DOKUMEN, 
-  INITIAL_FORUM 
+  INITIAL_FORUM,
+  INITIAL_KEUANGAN
 } from './data';
 
 // Subcomponents modular imports
@@ -34,6 +35,7 @@ import GaleriView from './components/GaleriView';
 import BeritaView from './components/BeritaView';
 import DownloadView from './components/DownloadView';
 import ForumView from './components/ForumView';
+import KeuanganView from './components/KeuanganView';
 import KontakView from './components/KontakView';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -49,6 +51,7 @@ export default function App() {
   const [beritas, setBeritas] = useState<Berita[]>([]);
   const [dokumens, setDokumens] = useState<Dokumen[]>([]);
   const [forumMessages, setForumMessages] = useState<ForumMessage[]>([]);
+  const [transaksis, setTransaksis] = useState<TransaksiKeuangan[]>([]);
 
   // Form states for login
   const [usernameInput, setUsernameInput] = useState('');
@@ -61,7 +64,7 @@ export default function App() {
   // ----------------------------------------------------
   useEffect(() => {
     // Migration block to ensure old cached data is updated to standard configuration requested by the user
-    const MIGRATION_VERSION = 'v5_empty_gurus_with_new_admin_v2';
+    const MIGRATION_VERSION = 'v6_empty_gurus_finance_v5_nomock';
     const currentMigration = localStorage.getItem('kkg_pjok_migration_ver');
 
     if (currentMigration !== MIGRATION_VERSION) {
@@ -81,8 +84,8 @@ export default function App() {
       if (cachedG) {
         setGurus(JSON.parse(cachedG));
       } else {
-        setGurus(INITIAL_GURU);
-        localStorage.setItem('kkg_pjok_gurus', JSON.stringify(INITIAL_GURU));
+        setGurus([]);
+        localStorage.setItem('kkg_pjok_gurus', JSON.stringify([]));
       }
     }
 
@@ -124,6 +127,14 @@ export default function App() {
     else {
       setForumMessages(INITIAL_FORUM);
       localStorage.setItem('kkg_pjok_forums', JSON.stringify(INITIAL_FORUM));
+    }
+
+    // Keuangan Jurnal
+    const cachedKeuangan = localStorage.getItem('kkg_pjok_keuangan');
+    if (cachedKeuangan) setTransaksis(JSON.parse(cachedKeuangan));
+    else {
+      setTransaksis(INITIAL_KEUANGAN);
+      localStorage.setItem('kkg_pjok_keuangan', JSON.stringify(INITIAL_KEUANGAN));
     }
 
     // Current Session & Automatic conversion of outdated admin profiles
@@ -178,6 +189,11 @@ export default function App() {
   const updateForumsState = (newF: ForumMessage[]) => {
     setForumMessages(newF);
     localStorage.setItem('kkg_pjok_forums', JSON.stringify(newF));
+  };
+
+  const updateTransaksisState = (newTx: TransaksiKeuangan[]) => {
+    setTransaksis(newTx);
+    localStorage.setItem('kkg_pjok_keuangan', JSON.stringify(newTx));
   };
 
   // ----------------------------------------------------
@@ -258,6 +274,17 @@ export default function App() {
     updateForumsState(updated);
   };
 
+  // Keuangan Mutate
+  const handleAddTransaksi = (newTx: TransaksiKeuangan) => {
+    const updated = [newTx, ...transaksis];
+    updateTransaksisState(updated);
+  };
+
+  const handleDeleteTransaksi = (id: string) => {
+    const updated = transaksis.filter(tx => tx.id !== id);
+    updateTransaksisState(updated);
+  };
+
   // ----------------------------------------------------
   // AUTHENTICATION LOGIN / OVERLAY DIALOGS
   // ----------------------------------------------------
@@ -282,6 +309,23 @@ export default function App() {
         localStorage.setItem('kkg_pjok_session', JSON.stringify(sess));
         setShowLoginModal(false);
         setActiveTab('admin-dashboard');
+        setUsernameInput('');
+        setPasswordInput('');
+        setLoginSuccess('');
+      }, 1000);
+    } else if (trimmedUser.toLowerCase() === 'bendahara' && trimmedPass === '@BendaharaKKG') {
+      const sess: User = {
+        username: 'bendahara',
+        nama: 'Nurhasanah, S.Pd.',
+        role: 'bendahara',
+        sekolah: 'SDN Louk'
+      };
+      setLoginSuccess('Selamat Datang, Ibu Nurhasanah, S.Pd. (Bendahara KKG)!');
+      setTimeout(() => {
+        setCurrentUser(sess);
+        localStorage.setItem('kkg_pjok_session', JSON.stringify(sess));
+        setShowLoginModal(false);
+        setActiveTab('keuangan');
         setUsernameInput('');
         setPasswordInput('');
         setLoginSuccess('');
@@ -413,6 +457,15 @@ export default function App() {
             currentUser={currentUser}
           />
         );
+      case 'keuangan':
+        return (
+          <KeuanganView
+            transaksiList={transaksis}
+            onAddTransaksi={handleAddTransaksi}
+            onDeleteTransaksi={handleDeleteTransaksi}
+            currentUser={currentUser}
+          />
+        );
       case 'kontak':
         return <KontakView />;
       case 'admin-dashboard':
@@ -443,8 +496,10 @@ export default function App() {
             onAddKegiatan={handleAddKegiatan}
             onDeleteKegiatan={handleDeleteKegiatan}
             beritas={beritas}
+            onAddBerita={handleAddBerita}
             onDeleteBerita={handleDeleteBerita}
             dokumens={dokumens}
+            onUploadDocument={handleUploadDocument}
             onDeleteDokumen={handleDeleteDocument}
           />
         );
@@ -628,30 +683,13 @@ export default function App() {
                 </button>
               </form>
 
-              {/* Shortcut buttons to avoid manual entry struggles */}
-              <div className="border-t border-white/10 pt-4 space-y-3">
-                <span className="block text-[9.5px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                  💡 Uji Coba Cepat (Role Shortcut)
+              {/* Secure explanation block replacing shortcut buttons */}
+              <div className="border-t border-white/10 pt-4 space-y-2">
+                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                  🔐 Informasi Akses Akun Resmi KKG
                 </span>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleShortcutLogin('admin')}
-                    className="py-2 px-3 border border-white/15 h-[34px] hover:bg-white/10 text-[11px] font-bold rounded-xl text-white flex items-center justify-center gap-1 cursor-pointer transition-all"
-                  >
-                    👑 Login Admin
-                  </button>
-
-                  <button
-                    onClick={() => handleShortcutLogin('guru')}
-                    className="py-2 px-3 border border-white/15 h-[34px] hover:bg-white/10 text-[11px] font-bold rounded-xl text-white flex items-center justify-center gap-1 cursor-pointer transition-all"
-                  >
-                    🏃 Login Guru
-                  </button>
-                </div>
-                
-                <p className="text-[10px] text-slate-400 text-center">
-                  Pilihlah pintasan di atas untuk langsung membuka Dashboard atau Forum Diskusi interaktif.
+                <p className="text-[10px] text-slate-350 leading-relaxed text-center">
+                  Hubungi Pengurus KKG untuk mendaftar. Anggota dapat login menggunakan username <strong>NIP</strong> dan password masing-masing.
                 </p>
               </div>
 

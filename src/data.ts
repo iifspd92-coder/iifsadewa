@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Guru, Kegiatan, Galeri, Berita, Dokumen, ForumMessage } from './types';
+import { Guru, Kegiatan, Galeri, Berita, Dokumen, ForumMessage, TransaksiKeuangan } from './types';
 
 export const INITIAL_GURU: Guru[] = [];
 
@@ -232,5 +232,62 @@ export const INITIAL_FORUM: ForumMessage[] = [
     sekolah: 'SDN Louk',
     pesan: 'Izin mengingatkan iuran rutin kas bulanan KKG PJOK Luwuk Timur untuk periode Juni 2026 bisa ditransfer atau diserahkan pas Rapat Kerja tanggal 20 nanti ya bapak ibu. Terima kasih banyak 🙏',
     tanggal: '2026-06-14 09:45'
+  }
+];
+
+export const INITIAL_KEUANGAN: TransaksiKeuangan[] = [
+  {
+    id: 'TR001',
+    tanggal: '2026-06-01',
+    keterangan: 'Iuran Rapat Kas Bulanan Anggota KKG PJOK - Periode Mei 2026',
+    tipe: 'Pemasukan',
+    jumlah: 1250000,
+    kategori: 'Iuran Kas',
+    penulis: 'Nurhasanah, S.Pd.'
+  },
+  {
+    id: 'TR002',
+    tanggal: '2026-06-03',
+    keterangan: 'Sponsorship Toko Olahraga Banggai Sport Indonesia',
+    tipe: 'Pemasukan',
+    jumlah: 1500000,
+    kategori: 'Sponsorship',
+    penulis: 'Nurhasanah, S.Pd.'
+  },
+  {
+    id: 'TR003',
+    tanggal: '2026-06-08',
+    keterangan: 'Biaya Pengadaan Alat Atletik Kids (Kanga\'s escape, formula one)',
+    tipe: 'Pengeluaran',
+    jumlah: 850000,
+    kategori: 'Peralatan',
+    penulis: 'Nurhasanah, S.Pd.'
+  },
+  {
+    id: 'TR004',
+    tanggal: '2026-06-11',
+    keterangan: 'Iuran Kas Sukarela Pendamping Seleksi Kabupaten',
+    tipe: 'Pemasukan',
+    jumlah: 600000,
+    kategori: 'Iuran Kas',
+    penulis: 'Nurhasanah, S.Pd.'
+  },
+  {
+    id: 'TR005',
+    tanggal: '2026-06-12',
+    keterangan: 'Belanja Konsumsi Snack & Rapat Koordinasi SDN 1 Hunduhon',
+    tipe: 'Pengeluaran',
+    jumlah: 350000,
+    kategori: 'Konsumsi',
+    penulis: 'Iif Sadewa Goa, S.Pd.'
+  },
+  {
+    id: 'TR006',
+    tanggal: '2026-06-14',
+    keterangan: 'Subsidi Bantuan Transport Pemateri Teknis SKJ 2026',
+    tipe: 'Pengeluaran',
+    jumlah: 500000,
+    kategori: 'Transport',
+    penulis: 'Nurhasanah, S.Pd.'
   }
 ];

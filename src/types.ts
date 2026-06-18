@@ -75,6 +75,16 @@ export interface ForumMessage {
 export interface User {
   username: string;
   nama: string;
-  role: 'admin' | 'guru' | 'pengunjung';
+  role: 'admin' | 'bendahara' | 'guru' | 'pengunjung';
   sekolah?: string;
+}
+
+export interface TransaksiKeuangan {
+  id: string;
+  tanggal: string;
+  keterangan: string;
+  tipe: 'Pemasukan' | 'Pengeluaran';
+  jumlah: number;
+  kategori: 'Iuran Kas' | 'Sponsorship' | 'Dana Pembinaan' | 'Konsumsi' | 'Peralatan' | 'Biaya Acara' | 'Transport' | 'Lainnya';
+  penulis: string;
 }

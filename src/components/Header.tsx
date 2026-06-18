@@ -33,6 +33,7 @@ export default function Header({
     { id: 'berita', label: 'Berita & Pengumuman' },
     { id: 'download', label: 'Unduhan' },
     { id: 'forum', label: 'Forum Diskusi' },
+    { id: 'keuangan', label: 'Keuangan KKG' },
     { id: 'kontak', label: 'Kontak' },
   ];
 

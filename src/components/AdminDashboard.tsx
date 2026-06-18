@@ -22,8 +22,10 @@ interface AdminDashboardProps {
   onAddKegiatan: (newK: Kegiatan) => void;
   onDeleteKegiatan: (id: string) => void;
   beritas: Berita[];
+  onAddBerita: (newB: Berita) => void;
   onDeleteBerita: (id: string) => void;
   dokumens: Dokumen[];
+  onUploadDocument: (newDoc: Dokumen) => void;
   onDeleteDokumen: (id: string) => void;
 }
 
@@ -36,8 +38,10 @@ export default function AdminDashboard({
   onAddKegiatan,
   onDeleteKegiatan,
   beritas,
+  onAddBerita,
   onDeleteBerita,
   dokumens,
+  onUploadDocument,
   onDeleteDokumen,
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'stats' | 'guru' | 'agenda' | 'arsip'>('stats');
@@ -62,6 +66,21 @@ export default function AdminDashboard({
   const [agendaLokasi, setAgendaLokasi] = useState('');
   const [agendaKat, setAgendaKat] = useState<Kegiatan['kategori']>('Rapat KKG');
   const [showAddAgendaForm, setShowAddAgendaForm] = useState(false);
+
+  // Form states for adding News Article inside Dashboard
+  const [newsJudul, setNewsJudul] = useState('');
+  const [newsRingkasan, setNewsRingkasan] = useState('');
+  const [newsIsi, setNewsIsi] = useState('');
+  const [newsKategori, setNewsKategori] = useState<Berita['kategori']>('Berita KKG');
+  const [newsImage, setNewsImage] = useState('');
+  const [showAddNewsForm, setShowAddNewsForm] = useState(false);
+
+  // Form states for adding Document inside Dashboard
+  const [docJudul, setDocJudul] = useState('');
+  const [docKategori, setDocKategori] = useState<Dokumen['kategori']>('Modul SD');
+  const [docFileUrl, setDocFileUrl] = useState('');
+  const [docType, setDocType] = useState<Dokumen['tipe']>('pdf');
+  const [showAddDocForm, setShowAddDocForm] = useState(false);
 
   const [notif, setNotif] = useState<string | null>(null);
 
@@ -201,6 +220,67 @@ export default function AdminDashboard({
     setAgendaWaktu('08:00 WITA - Selesai');
     setAgendaLokasi('');
     setShowAddAgendaForm(false);
+  };
+
+  // Handle News Submission
+  const handleNewsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsJudul || !newsRingkasan || !newsIsi) {
+      alert('Harap lengkapi judul, ringkasan, dan isi berita.');
+      return;
+    }
+
+    const newArticle: Berita = {
+      id: `B_MOCK_${Date.now()}`,
+      judul: newsJudul,
+      ringkasan: newsRingkasan,
+      isi: newsIsi,
+      tanggal: new Date().toISOString().split('T')[0],
+      kategori: newsKategori,
+      imageUrl: newsImage || 'https://images.unsplash.com/photo-1544698310-74ea9d1c8258?q=80',
+      penulis: 'Admin KKG PJOK',
+      komentar: []
+    };
+
+    onAddBerita(newArticle);
+    showNotification(`📰 Artikel berita "${newsJudul}" sukses ditambahkan!`);
+
+    // Reset news form
+    setNewsJudul('');
+    setNewsRingkasan('');
+    setNewsIsi('');
+    setNewsImage('');
+    setShowAddNewsForm(false);
+  };
+
+  // Handle Document Submission
+  const handleDocSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docJudul) {
+      alert('Harap isi judul berkas/dokumen.');
+      return;
+    }
+
+    const mockSizes = ['1.2 MB', '850 KB', '2.4 MB', '4.1 MB', '620 KB'];
+    const randomSize = mockSizes[Math.floor(Math.random() * mockSizes.length)];
+
+    const newDoc: Dokumen = {
+      id: `DOC_MOCK_${Date.now()}`,
+      judul: docJudul,
+      kategori: docKategori,
+      ukuran: randomSize,
+      tipe: docType,
+      tanggalUpload: new Date().toISOString().split('T')[0],
+      url: docFileUrl || '#'
+    };
+
+    onUploadDocument(newDoc);
+    showNotification(`💾 File "${docJudul}" berhasil diunggah ke perpustakaan digital!`);
+
+    // Reset doc form
+    setDocJudul('');
+    setDocFileUrl('');
+    setShowAddDocForm(false);
   };
 
   return (
@@ -778,16 +858,103 @@ export default function AdminDashboard({
           TAB 4: NEWS & DOCUMENTS MANAGER
           ---------------------------------------------------- */}
       {activeTab === 'arsip' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           
           {/* Post reviews (col-span-1) */}
           <div className="glass-card border border-white/10 rounded-2xl p-5 shadow-lg space-y-4 text-white">
-            <h3 className="font-display font-bold text-white border-b border-white/10 pb-2 text-xs uppercase tracking-wider flex items-center justify-between">
-              <span>📰 Rilis Artikel / Pengumuman</span>
-              <span className="bg-blue-600 border border-white/10 text-white font-bold px-2.5 py-0.5 rounded-full text-[10px]">
-                {beritas.length} Arsip
-              </span>
-            </h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-2 gap-2">
+              <h3 className="font-display font-bold text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                <span>📰 Rilis Artikel / Pengumuman</span>
+                <span className="bg-blue-600 border border-white/10 text-white font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                  {beritas.length} Arsip
+                </span>
+              </h3>
+              
+              <button
+                onClick={() => setShowAddNewsForm(!showAddNewsForm)}
+                className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/35 text-blue-300 rounded-lg text-[10px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Tambah Berita
+              </button>
+            </div>
+
+            {/* Form writing inline collapse */}
+            {showAddNewsForm && (
+              <form onSubmit={handleNewsSubmit} className="bg-black/20 border border-white/5 p-4 rounded-xl space-y-3 animate-fade-in text-[11px]">
+                <div className="flex justify-between items-center pb-1">
+                  <span className="font-bold text-blue-300">Buat Berita / Pengumuman Baru</span>
+                  <button type="button" onClick={() => setShowAddNewsForm(false)} className="text-slate-400 hover:text-white">Batal</button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Judul Berita</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Seleksi Atlet O2SN Kecamatan Luwuk Timur 2026"
+                      value={newsJudul}
+                      onChange={(e) => setNewsJudul(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Ringkasan Ringkas (Ulasan Awal)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ulasan satu baris tentang berita..."
+                      value={newsRingkasan}
+                      onChange={(e) => setNewsRingkasan(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Katagori Berita</label>
+                    <select
+                      value={newsKategori}
+                      onChange={(e) => setNewsKategori(e.target.value as any)}
+                      className="w-full p-2 bg-slate-900 border border-white/10 rounded-lg text-slate-200"
+                    >
+                      <option value="Berita KKG">Berita KKG & Kegiatan</option>
+                      <option value="Lomba & Turnamen">Lomba & Turnamen Siswa</option>
+                      <option value="Pengumuman Resmi">Pengumuman Resmi</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">URL Gambar Sampul (Jika ada)</label>
+                    <input
+                      type="url"
+                      placeholder="Contoh: https://images.unsplash.com/... (kosongkan untuk default)"
+                      value={newsImage}
+                      onChange={(e) => setNewsImage(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Isi Naskah Berita Lengkap</label>
+                    <textarea
+                      required
+                      rows={4}
+                      placeholder="Tulis disini isi naskah berita lengkap bapak ibu..."
+                      value={newsIsi}
+                      onChange={(e) => setNewsIsi(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1 border-t border-white/5">
+                    <button type="button" onClick={() => setShowAddNewsForm(false)} className="px-3 py-1.5 rounded bg-white/5 text-slate-300 hover:bg-white/10">Batal</button>
+                    <button type="submit" className="px-5 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-bold">Simpan & Publis</button>
+                  </div>
+                </div>
+              </form>
+            )}
 
             <div className="space-y-3.5 max-h-[400px] overflow-y-auto divide-y divide-white/5 pr-1">
               {beritas.map((ar) => (
@@ -815,12 +982,92 @@ export default function AdminDashboard({
 
           {/* Docs reviews (col-span-2) */}
           <div className="glass-card border border-white/10 rounded-2xl p-5 shadow-lg space-y-4 text-white">
-            <h3 className="font-display font-bold text-white border-b border-white/10 pb-2 text-xs uppercase tracking-wider flex items-center justify-between">
-              <span>💾 Berkas Pembelajaran & Juknis</span>
-              <span className="bg-emerald-500/20 border border-emerald-505 text-emerald-355 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
-                {dokumens.length} File
-              </span>
-            </h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-2 gap-2">
+              <h3 className="font-display font-bold text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                <span>💾 Berkas Pembelajaran & Juknis</span>
+                <span className="bg-emerald-500/20 border border-emerald-505 text-emerald-355 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                  {dokumens.length} File
+                </span>
+              </h3>
+
+              <button
+                onClick={() => setShowAddDocForm(!showAddDocForm)}
+                className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/35 text-emerald-300 rounded-lg text-[10px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Tambah Berkas
+              </button>
+            </div>
+
+            {/* Form uploading inline collapse */}
+            {showAddDocForm && (
+              <form onSubmit={handleDocSubmit} className="bg-black/20 border border-white/5 p-4 rounded-xl space-y-3 animate-fade-in text-[11px]">
+                <div className="flex justify-between items-center pb-1">
+                  <span className="font-bold text-emerald-300">Tambahkan Unduhan Berkas Baru</span>
+                  <button type="button" onClick={() => setShowAddDocForm(false)} className="text-slate-400 hover:text-white">Batal</button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Nama Dokumen / Judul File</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Modul Ajar PJOK Kelas 4 Kurikulum Merdeka"
+                      value={docJudul}
+                      onChange={(e) => setDocJudul(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Tipe Berkas</label>
+                    <select
+                      value={docType}
+                      onChange={(e) => setDocType(e.target.value as any)}
+                      className="w-full p-2 bg-slate-900 border border-white/10 rounded-lg text-slate-200"
+                    >
+                      <option value="pdf">PDF (Dokumen Ringkas)</option>
+                      <option value="docx">DOCX / Word (Materi RPP)</option>
+                      <option value="xlsx">XLSX / Excel (Nilai/Skor)</option>
+                      <option value="zip">ZIP (Bundel Materi)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">Kategori Berkas</label>
+                    <select
+                      value={docKategori}
+                      onChange={(e) => setDocKategori(e.target.value as any)}
+                      className="w-full p-2 bg-slate-900 border border-white/10 rounded-lg text-slate-200"
+                    >
+                      <option value="Modul SD">Modul SD / Bahan Pelatihan</option>
+                      <option value="Silabus">Silabus Kurikulum</option>
+                      <option value="RPP">RPP / Modul Ajar</option>
+                      <option value="Dokumen Lomba">Juknis / Dokumen Lomba</option>
+                      <option value="Sertifikat">Piagam / Sertifikat</option>
+                      <option value="Lainnya">Lain-Lain (Lainnya)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-semibold text-slate-300">URL Tautan Google Drive / Unduhan</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: https://drive.google.com/file/... (kosongkan jika belum ada)"
+                      value={docFileUrl}
+                      onChange={(e) => setDocFileUrl(e.target.value)}
+                      className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-white font-mono"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1 border-t border-white/5">
+                    <button type="button" onClick={() => setShowAddDocForm(false)} className="px-3 py-1.5 rounded bg-white/5 text-slate-300 hover:bg-white/10">Batal</button>
+                    <button type="submit" className="px-5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Terbitkan Berkas</button>
+                  </div>
+                </div>
+              </form>
+            )}
 
             <div className="space-y-3.5 max-h-[400px] overflow-y-auto divide-y divide-white/5 pr-1">
               {dokumens.map((dc) => (
